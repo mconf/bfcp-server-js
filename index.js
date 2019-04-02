@@ -1,6 +1,7 @@
 const User = require('./lib/user.js');
 const Conference = require('./lib/conference.js');
 const EventEmitter = require('events');
+const Config = require('config');
 
 class BFCPServer extends EventEmitter {
   constructor() {
@@ -10,7 +11,7 @@ class BFCPServer extends EventEmitter {
   }
 
   get users() {
-    return this._conferences;
+    return this._users;
   }
 
   set users(users) {
@@ -25,8 +26,8 @@ class BFCPServer extends EventEmitter {
     this._conferences = conferences;
   }
 
-  async startBFCPConnection(userId, userPort, userIp, conferenceId) {
-    let user = new User(userId, userPort, userIp, conferenceId, this);
+  async startBfcpConnection(userId, userPort, userIp, conferenceId, transportProtocol) {
+    let user = new User(userId, userPort, userIp, conferenceId, transportProtocol, this);
     this.users[user.id] = user;
 
     if(conferenceId in this.conferences) {
@@ -36,14 +37,24 @@ class BFCPServer extends EventEmitter {
       this.conferences[conferenceId].addUser(user);
     }
 
-    await user.startBFCPConnection();
+    let serverPort = await user.startBfcpConnection();
+    return {
+      'serverPort': serverPort,
+      'serverIp': '143.54.10.49'
+    }
   }
 
-  closeBFCPConnection(userId) {
+  stopBfcpConnection(userId) {
     if(userId in this.users) {
-      users[userId].closeBFCPConnection();
+      this.users[userId].stopBfcpConnection();
     } else {
       throw new Error('The user ' + userId + ' does not exist.');
+    }
+  }
+
+  floorRequestResponse(conferenceId, userId, status) {
+    if(userId in this.users && conferenceId in this.conferences) {
+      this.users[userId].floorRequestResponse(status);
     }
   }
 
