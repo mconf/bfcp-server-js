@@ -1,4 +1,4 @@
-const BFCPServer = require('./server.js');
+const BFCPServer = require('./index.js');
 
 let server = new BFCPServer();
 
