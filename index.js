@@ -2,13 +2,15 @@ const User = require('./lib/user.js');
 const Conference = require('./lib/conference.js');
 const EventEmitter = require('events');
 const Config = require('config');
-const ServerIp = '127.0.0.1';
 
 class BFCPServer extends EventEmitter {
-  constructor() {
+  constructor(args) {
     super();
     this._users = {};
     this._conferences = {};
+    User.serverPort = args.startingPort;
+    User.serverIp = args.ip;
+    this.logger = args.logger;
   }
 
   get users() {
@@ -41,7 +43,7 @@ class BFCPServer extends EventEmitter {
     let serverPort = await user.startBfcpConnection();
     return {
       'serverPort': serverPort,
-      'serverIp': ServerIp
+      'serverIp': User.serverIp
     }
   }
 
@@ -49,7 +51,7 @@ class BFCPServer extends EventEmitter {
     if(userId in this.users) {
       this.users[userId].stopBfcpConnection();
     } else {
-      throw new Error('The user ' + userId + ' does not exist.');
+      this.logger.warn('The user ' + userId + ' does not exist.');
     }
   }
 
@@ -63,7 +65,7 @@ class BFCPServer extends EventEmitter {
         }
       }
     } else {
-      console.log('[bfcp-server] User or conference not found.')
+      this.logger.warn('[BFCP-SERVER] User or conference not found.')
     }
   }
 

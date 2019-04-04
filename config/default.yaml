@@ -1,8 +1,0 @@
-server:
-  ip: '143.54.10.49'
-  port: 8000
-  path: "/bfcp-server-js"
-
-security:
-  server_certificate_file: "keys/server.crt"
-  server_private_key_file: "keys/server.key"
