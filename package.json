@@ -7,8 +7,6 @@
     "url": "git+https://github.com/Scheffel-V/bfcp-server-js.git"
   },
   "dependencies": {
-    "config": "^1.30.0",
-    "js-yaml": "^3.0.0",
     "bfcp-lib": "file:///home/scheffel/bfcp-lib"
   }
 }

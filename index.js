@@ -1,7 +1,6 @@
 const User = require('./lib/user.js');
 const Conference = require('./lib/conference.js');
 const EventEmitter = require('events');
-const Config = require('config');
 
 class BFCPServer extends EventEmitter {
   constructor(args) {
