@@ -21,12 +21,32 @@ let bfcpServer = new BfcpServer(
   }
 );
 
+let userId = 1;
+let userPort;
+let userIp;
+let conferenceId = 1;
+let protocol = 'UDP';
+
+/**
+ * You can start a new bfcp connection for a user in a conference.
+ * After this, BFCPServer can emit events depending on the
+ * BFCP messages received.
+ */
+bfcpServer.startBfcpConnection(
+  userId,
+  userPort,
+  userIp,
+  conferenceId,
+  protocol
+);
+
+/**
+ * Expect for the BFCPServer events
+ */
 bfcpServer.on('FloorRequest', (body) => {
   /**
    * Here you can handle the Floor Request.
    */
-   let conferenceId = 1;
-   let userId = 1;
    let status = true;
 
   /**
@@ -48,4 +68,9 @@ bfcpServer.on('FloorRelease', (body) => {
    */
    bfcpServer.floorRequestResponse(conferenceId, userId, false);
 });
+
+/**
+ * You can stop the bfcp connection when you want.
+ */
+bfcpServer.stopBfcpConnection(userId);
 ```
