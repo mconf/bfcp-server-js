@@ -2,7 +2,20 @@ const User = require('./lib/user.js');
 const Conference = require('./lib/conference.js');
 const EventEmitter = require('events');
 
+/**
+ * @classdesc
+ * This class is the main class of this application, which is used to
+ * communicate with other applications.
+ * @extends EventEmitter
+ * @memberof bfcp-server-js
+ * @emits BFCPServer#event:FloorRequest
+ * @emits BFCPServer#event:FloorRelease
+ */
 class BFCPServer extends EventEmitter {
+  /**
+   * @param {Object} args Server arguments. Must containt the server starting
+   * port, ip and logger.
+   */
   constructor(args) {
     super();
     this._users = {};
@@ -12,6 +25,10 @@ class BFCPServer extends EventEmitter {
     this.logger = args.logger;
   }
 
+  /**
+   * Gets the users.
+   * @return {bfcp-server-js.User[]} The user list
+   */
   get users() {
     return this._users;
   }
@@ -20,6 +37,10 @@ class BFCPServer extends EventEmitter {
     this._users = users;
   }
 
+  /**
+   * Gets the conferences.
+   * @return {bfcp-server-js.Conference[]} The conference list
+   */
   get conferences() {
     return this._conferences;
   }
@@ -28,6 +49,17 @@ class BFCPServer extends EventEmitter {
     this._conferences = conferences;
   }
 
+  /**
+   * Starts a new BFCP connection for a new User.
+   * @param  {Integer} userId            The user id
+   * @param  {Integer} userPort          The user port
+   * @param  {String}  userIp            The user ip
+   * @param  {Integer} conferenceId      The conference id
+   * @param  {String}  transportProtocol The user transport protocol
+   * @return {Object}                    Returns a object containing the
+   *                                     server port and ip.
+   * @public
+   */
   async startBfcpConnection(userId, userPort, userIp, conferenceId, transportProtocol) {
     let user = new User(userId, userPort, userIp, conferenceId, transportProtocol, this);
     this.users[user.id] = user;
@@ -46,6 +78,11 @@ class BFCPServer extends EventEmitter {
     }
   }
 
+  /**
+   * Stops a BFCP connection for the user with userId.
+   * @param  {Integer} userId The user id
+   * @public
+   */
   stopBfcpConnection(userId) {
     if(userId in this.users) {
       let user = this.users[userId];
@@ -64,6 +101,15 @@ class BFCPServer extends EventEmitter {
     }
   }
 
+  /**
+   * Sends a floor request response to the user with UserId,
+   * and floor status to the other usersr in the conference
+   * with conferenceId.
+   * @param  {Integer} conferenceId The conference id
+   * @param  {Integer} userId       The user id
+   * @param  {Boolean} status       The floor response status
+   * @public
+   */
   floorRequestResponse(conferenceId, userId, status) {
     if(userId in this.users && conferenceId in this.conferences) {
       this.users[userId].floorRequestResponse(status);
@@ -77,6 +123,12 @@ class BFCPServer extends EventEmitter {
     }
   }
 
+  /**
+   * Emits the FloorRequest event.
+   * @param  {bfcp-server-js.User} user The user who called this method
+   * @public
+   * @emits  BFCPServer#event:FloorRequest
+   */
   emitFloorRequest(user) {
     this.emit('FloorRequest',
      {
@@ -86,6 +138,12 @@ class BFCPServer extends EventEmitter {
     );
   }
 
+  /**
+   * Emits the FloorRelease event.
+   * @param  {bfcp-server-js.User} user The user who called this method
+   * @public
+   * @emits BFCPServer#event:FloorRelease
+   */
   emitFloorRelease(user) {
     this.emit('FloorRelease',
      {
