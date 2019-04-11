@@ -7,6 +7,6 @@
     "url": "git+https://github.com/Scheffel-V/bfcp-server-js.git"
   },
   "dependencies": {
-    "bfcp-lib": "file:///home/scheffel/bfcp-lib"
+    "bfcp-lib": "git+ssh://github.com/Scheffel-V/bfcp-lib.git"
   }
 }
