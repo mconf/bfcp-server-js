@@ -48,7 +48,17 @@ class BFCPServer extends EventEmitter {
 
   stopBfcpConnection(userId) {
     if(userId in this.users) {
-      this.users[userId].stopBfcpConnection();
+      let user = this.users[userId];
+      let conference = this.conferences[user.conferenceId];
+      user.stopBfcpConnection();
+      conference.removeUser(user);
+      if(conference.users.length == 0) {
+        this.logger.info('[BFCP-SERVER] Conference ' + conference.id +
+        ' have 0 users. Deleting it.');
+        delete this.conferences[user.conferenceId];
+      }
+      this.logger.info('[BFCP-SERVER] Deleting user ' + userId + '.');
+      delete this.users[userId];
     } else {
       this.logger.warn('The user ' + userId + ' does not exist.');
     }
@@ -59,8 +69,7 @@ class BFCPServer extends EventEmitter {
       this.users[userId].floorRequestResponse(status);
       for(let user of this.conferences[conferenceId].users) {
         if(user.id != userId) {
-          let floorId = this.users[userId].wantedFloorId;
-          user.floorStatus(floorId, status);
+          user.floorStatus(this.users[userId].wantedFloorId, status);
         }
       }
     } else {
