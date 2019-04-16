@@ -102,8 +102,8 @@ class BFCPServer extends EventEmitter {
   }
 
   /**
-   * Sends a floor request response to the user with UserId,
-   * and floor status to the other usersr in the conference
+   * Sends a floor request response to the user with userId,
+   * and floor status to the other users in the conference
    * with conferenceId.
    * @param  {Integer} conferenceId The conference id
    * @param  {Integer} userId       The user id
@@ -118,6 +118,22 @@ class BFCPServer extends EventEmitter {
           user.floorStatus(this.users[userId].wantedFloorId, status);
         }
       }
+    } else {
+      this.logger.warn('[BFCP-SERVER] User or conference not found.')
+    }
+  }
+
+  /**
+   * Sends a floor status to the user with userId,
+   * in the conference with conferenceId.
+   * @param  {Integer} conferenceId The conference id
+   * @param  {Integer} userId       The user id
+   * @param  {Boolean} status       The floor response status
+   * @public
+   */
+  floorQueryResponse(conferenceId, userId, status) {
+    if(userId in this.users && conferenceId in this.conferences) {
+      this.users[userId].floorQueryResponse(status);
     } else {
       this.logger.warn('[BFCP-SERVER] User or conference not found.')
     }
@@ -146,6 +162,21 @@ class BFCPServer extends EventEmitter {
    */
   emitFloorRelease(user) {
     this.emit('FloorRelease',
+     {
+      'userId': user.id,
+      'conferenceId': user.conferenceId
+     }
+    );
+  }
+
+  /**
+   * Emits the FloorQuery event.
+   * @param  {bfcp-server-js.User} user The user who called this method
+   * @public
+   * @emits BFCPServer#event:FloorQuery
+   */
+  emitFloorQuery(user) {
+    this.emit('FloorQuery',
      {
       'userId': user.id,
       'conferenceId': user.conferenceId
