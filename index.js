@@ -21,6 +21,7 @@ class BFCPServer extends EventEmitter {
     this._users = {};
     this._conferences = {};
     User.serverPort = args.startingPort;
+    User.portPool = [];
     User.serverIp = args.ip;
     this.logger = args.logger;
   }
