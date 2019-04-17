@@ -125,6 +125,28 @@ class BFCPServer extends EventEmitter {
   }
 
   /**
+   * Sends a floor status to all users in the conference,
+   * except for the user with userId.
+   * @param  {Integer} conferenceId The conference id
+   * @param  {Integer} userId       The user id
+   * @param  {Boolean} status       The floor response status
+   * @public
+   */
+  floorStatus(conferenceId, userId, status) {
+    this.logger.info('[BFCP-SERVER] Informing users in the conference ' +
+     conferenceId + ' that the floor user has disconnected.');
+    if(userId in this.users && conferenceId in this.conferences) {
+      for(let user of this.conferences[conferenceId].users) {
+        if(user.id != userId) {
+          user.floorStatus(this.users[userId].wantedFloorId, status);
+        }
+      }
+    } else {
+      this.logger.warn('[BFCP-SERVER] User or conference not found.')
+    }
+  }
+
+  /**
    * Sends a floor status to the user with userId,
    * in the conference with conferenceId.
    * @param  {Integer} conferenceId The conference id
