@@ -75,7 +75,10 @@ class BFCPServer extends EventEmitter {
     let serverPort = await user.startBfcpConnection();
     return {
       'serverPort': serverPort,
-      'serverIp': User.serverIp
+      'serverIp': User.serverIp,
+      'floorControlRole': 's-only',
+      'setup': 'passive',
+      'transportProtocol' : user.transportProtocol
     }
   }
 
@@ -134,7 +137,7 @@ class BFCPServer extends EventEmitter {
    */
   floorStatus(conferenceId, userId, status) {
     this.logger.info('[BFCP-SERVER] Informing users in the conference ' +
-     conferenceId + ' that the floor user has disconnected.');
+     conferenceId + ' that the floor status is ' + status + '.');
     if(userId in this.users && conferenceId in this.conferences) {
       for(let user of this.conferences[conferenceId].users) {
         if(user.id != userId) {
