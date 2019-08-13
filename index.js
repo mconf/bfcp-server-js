@@ -117,11 +117,6 @@ class BFCPServer extends EventEmitter {
   floorRequestResponse(conferenceId, userId, status) {
     if(userId in this.users && conferenceId in this.conferences) {
       this.users[userId].floorRequestResponse(status);
-      for(let user of this.conferences[conferenceId].users) {
-        if(user.id != userId) {
-          user.floorStatus(this.users[userId].wantedFloorId, status);
-        }
-      }
     } else {
       this.logger.warn('[BFCP-SERVER] User or conference not found.')
     }
