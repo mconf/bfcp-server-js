@@ -4,9 +4,9 @@
   "description": "BFCP Server",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mconf/bfcp-server-js.git"
+    "url": "git+https://github.com/mconf/bfcp-server-js#master"
   },
   "dependencies": {
-    "lib-bfcp": "git+https://github.com/mconf/bfcp-lib.git"
+    "lib-bfcp": "git+https://github.com/mconf/lib-bfcp#master"
   }
 }
