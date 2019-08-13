@@ -4,9 +4,9 @@
   "description": "BFCP Server",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Scheffel-V/bfcp-server-js.git"
+    "url": "git+https://github.com/mconf/bfcp-server-js.git"
   },
   "dependencies": {
-    "bfcp-lib": "git+ssh://github.com/Scheffel-V/bfcp-lib.git"
+    "lib-bfcp": "git+https://github.com/mconf/bfcp-lib.git"
   }
 }
