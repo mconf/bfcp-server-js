@@ -78,6 +78,8 @@ class BFCPServer extends EventEmitter {
       'serverIp': User.serverIp,
       'floorControlRole': 's-only',
       'setup': 'passive',
+      'confid': conferenceId,
+      'userid': user.bfcpUser.userId,
       'transportProtocol' : user.transportProtocol
     }
   }
