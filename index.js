@@ -1,7 +1,8 @@
 const User = require('./lib/user.js');
 const Conference = require('./lib/conference.js');
 const EventEmitter = require('events');
-
+const MINPORT = 50000;
+const MAXPORT = 55000;
 /**
  * @classdesc
  * This class is the main class of this application, which is used to
@@ -13,15 +14,16 @@ const EventEmitter = require('events');
  */
 class BFCPServer extends EventEmitter {
   /**
-   * @param {Object} args Server arguments. Must containt the server starting
+   * @param {Object} args Server arguments. Must containt the server starting/ending
    * port, ip and logger.
    */
   constructor(args) {
     super();
     this._users = {};
     this._conferences = {};
-    User.serverPort = args.startingPort;
-    User.portPool = [];
+    this.usedServerPorts = [];
+    this.serverPort = args.startingPort;
+    this.serverEndingPort = args.endingPort;
     User.serverIp = args.ip;
     this.logger = args.logger;
   }
@@ -62,7 +64,19 @@ class BFCPServer extends EventEmitter {
    * @public
    */
   async startBfcpConnection(userId, userPort, userIp, conferenceId, transportProtocol) {
-    let user = new User(userId, userPort, userIp, conferenceId, transportProtocol, this);
+    if (this.serverPort <1 || this.serverEndingPort > 65535 ||
+      this.serverPort > this.serverEndingPort) {
+
+      this.logger.info('[BFCP-SERVER] Invalid range port chosen. Using Default range.');
+      this.serverPort = MINPORT;
+      this.serverEndingPort = MAXPORT;
+    }
+
+    let userServerPort =  await this.getServerPort();
+    let user = new User(userId, userPort, userServerPort, userIp, conferenceId, transportProtocol, this);
+    user.on("close", ()=> {
+      delete this.usedServerPorts[userServerPort];
+    });
     this.users[user.id] = user;
 
     if(conferenceId in this.conferences) {
@@ -72,9 +86,9 @@ class BFCPServer extends EventEmitter {
       this.conferences[conferenceId].addUser(user);
     }
 
-    let serverPort = await user.startBfcpConnection();
+    await user.startBfcpConnection();
     return {
-      'serverPort': serverPort,
+      'serverPort': userServerPort,
       'serverIp': User.serverIp,
       'floorControlRole': 's-only',
       'setup': 'passive',
@@ -82,6 +96,35 @@ class BFCPServer extends EventEmitter {
       'userid': user.bfcpUser.userId,
       'transportProtocol' : user.transportProtocol
     }
+  }
+
+  /**
+   * Gets a Server port, used for each user receive messages from the endpoint.
+   * @return {Integer} The port
+   * @async
+   */
+  async getServerPort() {
+    let i, port = 0;
+    port = await this.randomServerPort();
+    for (i = this.serverPort; i < this.serverEndingPort; i++) {
+      if (this.usedServerPorts[i] == this.usedServerPorts[port] &&
+        !this.usedServerPorts[port]) {
+          this.usedServerPorts[port] = true;
+          return port;
+      } else
+        port = await this.randomServerPort();
+    }
+ }
+
+  /**
+   * Choose a server port to client, so it can be used in the future for
+   * other clients.
+   * @return {Integer} The port
+   * @async
+   */
+  async randomServerPort() {
+    let choosenPort = Math.floor(Math.random() * ((this.serverEndingPort+1) - this.serverPort)) + this.serverPort;
+    return choosenPort;
   }
 
   /**
@@ -99,6 +142,8 @@ class BFCPServer extends EventEmitter {
         this.logger.info('[BFCP-SERVER] Conference ' + conference.id +
         ' have 0 users. Deleting it.');
         delete this.conferences[user.conferenceId];
+        this.logger.info('[BFCP-SERVER] Releasing user port ' + user.serverPort);
+        delete this.usedServerPorts[user.serverPort];
       }
       this.logger.info('[BFCP-SERVER] Deleting user ' + userId + '.');
       delete this.users[userId];
